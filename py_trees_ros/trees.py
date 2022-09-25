@@ -276,7 +276,8 @@ class BehaviourTree(py_trees.trees.BehaviourTree):
     def setup(
             self,
             timeout: float=py_trees.common.Duration.INFINITE,
-            visitor: py_trees.visitors.VisitorBase=None
+            visitor: py_trees.visitors.VisitorBase=None,
+            node: rclpy.node.Node = None,
     ):
         """
         Setup the publishers, exechange and add ros-relevant pre/post tick handlers to the tree.
@@ -285,6 +286,7 @@ class BehaviourTree(py_trees.trees.BehaviourTree):
         Args:
             timeout: time (s) to wait (use common.Duration.INFINITE to block indefinitely)
             visitor: runnable entities on each node after it's setup
+            node: ROS2 node object
 
         .. note:
 
@@ -299,7 +301,10 @@ class BehaviourTree(py_trees.trees.BehaviourTree):
         """
         # node creation - can raise rclpy.exceptions.NotInitializedException
         default_node_name = "tree"
-        self.node = rclpy.create_node(node_name=default_node_name)
+        if node:
+            self.node = node
+        else:
+            self.node = rclpy.create_node(node_name=default_node_name)
         if visitor is None:
             visitor = visitors.SetupLogger(node=self.node)
         self.default_snapshot_stream_topic_name = SnapshotStream.expand_topic_name(
